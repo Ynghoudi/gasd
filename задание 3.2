@@ -1,0 +1,93 @@
+using System;
+using System.Collections.Generic;
+
+class Component
+{
+    public string Name { get; set; }
+    public int Quantity { get; set; }
+    public decimal Price { get; set; }
+
+    public Component(string name, int quantity, decimal price)
+    {
+        Name = name;
+        Quantity = quantity;
+        Price = price;
+    }
+}
+
+class Inventory
+{
+    private List<Component> components = new List<Component>();
+
+    public void AddComponent(string name, int quantity, decimal price)
+    {
+        components.Add(new Component(name, quantity, price));
+    }
+
+    public void EditComponent(string name, int newQuantity, decimal newPrice)
+    {
+        var component = components.Find(c => c.Name == name);
+        if (component != null)
+        {
+            component.Quantity = newQuantity;
+            component.Price = newPrice;
+        }
+    }
+
+    public void ShowComponents()
+    {
+        foreach (var component in components)
+        {
+            Console.WriteLine($"{component.Name} - {component.Quantity} - {component.Price:C}");
+        }
+    }
+}
+
+class Sales
+{
+    private List<(string ComponentName, int Quantity)> sales = new List<(string, int)>();
+    private Inventory inventory;
+
+    public Sales(Inventory inventory)
+    {
+        this.inventory = inventory;
+    }
+
+    public void SellComponent(string name, int quantity)
+    {
+        var component = inventory.Components.Find(c => c.Name == name);
+        if (component != null && component.Quantity >= quantity)
+        {
+            component.Quantity -= quantity;
+            sales.Add((name, quantity));
+        }
+    }
+
+    public void ShowSales()
+    {
+        foreach (var sale in sales)
+        {
+            Console.WriteLine($"{sale.ComponentName} - {sale.Quantity}");
+        }
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        Inventory inventory = new Inventory();
+        Sales sales = new Sales(inventory);
+
+        inventory.AddComponent("CPU", 10, 250.00m);
+        inventory.AddComponent("GPU", 5, 400.00m);
+        inventory.ShowComponents();
+
+        sales.SellComponent("CPU", 2);
+        sales.ShowSales();
+        inventory.ShowComponents();
+
+        inventory.EditComponent("GPU", 3, 380.00m);
+        inventory.ShowComponents();
+    }
+}
