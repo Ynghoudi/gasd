@@ -1,0 +1,79 @@
+using System;
+using System.Windows.Forms;
+using static System.Net.Mime.MediaTypeNames;
+
+namespace GuessTheNumber
+{
+    public partial class MainForm : Form
+    {
+        public MainForm()
+        {
+            InitializeComponent();
+            StartGame();
+        }
+
+        private void StartGame()
+        {
+            int min = 1;
+            int max = 2000;
+            int attempts = 0;
+            bool isGuessed = false;
+            int guess = 0;
+
+            while (!isGuessed)
+            {
+                guess = (min + max) / 2; 
+                attempts++;
+
+                DialogResult result = MessageBox.Show($"Ваше число {guess}?",
+                    "Угадай число",
+                    MessageBoxButtons.YesNoCancel,
+                    MessageBoxIcon.Question);
+
+                if (result == DialogResult.Yes)
+                {
+                    MessageBox.Show($"Я угадал ваше число {guess} за {attempts} попыток!",
+                        "Успех",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                    isGuessed = true;
+                }
+                else if (result == DialogResult.No)
+                {
+                    string input = MessageBox.Show("Ваше число больше или меньше?",
+                        "Подсказка",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Question) == DialogResult.Yes
+                        ? "больше"
+                        : "меньше";
+
+                    if (input == "больше")
+                    {
+                        min = guess + 1; 
+                    }
+                    else
+                    {
+                        max = guess - 1;
+                }
+                else if (result == DialogResult.Cancel)
+                {
+                    break;
+                }
+            }
+
+           
+            DialogResult playAgain = MessageBox.Show("Хотите сыграть еще раз?",
+                "Игра окончена",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+            if (playAgain == DialogResult.Yes)
+            {
+                StartGame(); 
+            }
+            else
+            {
+                Application.Exit(); 
+            }
+        }
+    }
+}
