@@ -1,0 +1,155 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Windows.Forms;
+using System.Xml.Serialization;
+
+namespace UserSurveyApp
+{
+    public partial class MainForm : Form
+    {
+        private List<User> users = new List<User>();
+
+        public MainForm()
+        {
+            InitializeComponent();
+        }
+
+        private void btnAdd_Click(object sender, EventArgs e)
+        {
+            User user = new User
+            {
+                FirstName = txtFirstName.Text,
+                LastName = txtLastName.Text,
+                Email = txtEmail.Text,
+                Phone = txtPhone.Text
+            };
+            users.Add(user);
+            UpdateListBox();
+            ClearInputs();
+        }
+
+        private void listBoxUsers_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listBoxUsers.SelectedItem is User selectedUser)
+            {
+                txtFirstName.Text = selectedUser.FirstName;
+                txtLastName.Text = selectedUser.LastName;
+                txtEmail.Text = selectedUser.Email;
+                txtPhone.Text = selectedUser.Phone;
+            }
+        }
+
+        private void btnEdit_Click(object sender, EventArgs e)
+        {
+            if (listBoxUsers.SelectedItem is User selectedUser)
+            {
+                selectedUser.FirstName = txtFirstName.Text;
+                selectedUser.LastName = txtLastName.Text;
+                selectedUser.Email = txtEmail.Text;
+                selectedUser.Phone = txtPhone.Text;
+                UpdateListBox();
+                ClearInputs();
+            }
+        }
+
+        private void btnDelete_Click(object sender, EventArgs e)
+        {
+            if (listBoxUsers.SelectedItem is User selectedUser)
+            {
+                users.Remove(selectedUser);
+                UpdateListBox();
+                ClearInputs();
+            }
+        }
+
+        private void btnExportText_Click(object sender, EventArgs e)
+        {
+            using (StreamWriter writer = new StreamWriter("users.txt"))
+            {
+                foreach (User user in users)
+                {
+                    writer.WriteLine($"{user.FirstName};{user.LastName};{user.Email};{user.Phone}");
+                }
+            }
+            MessageBox.Show("Данные экспортированы в users.txt");
+        }
+
+        private void btnImportText_Click(object sender, EventArgs e)
+        {
+            using (StreamReader reader = new StreamReader("users.txt"))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    var parts = line.Split(';');
+                    if (parts.Length == 4)
+                    {
+                        users.Add(new User
+                        {
+                            FirstName = parts[0],
+                            LastName = parts[1],
+                            Email = parts[2],
+                            Phone = parts[3]
+                        });
+                    }
+                }
+            }
+            UpdateListBox();
+            MessageBox.Show("Данные импортированы из users.txt");
+        }
+
+        private void btnExportXml_Click(object sender, EventArgs e)
+        {
+            XmlSerializer serializer = new XmlSerializer(typeof(List<User>));
+            using (FileStream fs = new FileStream("users.xml", FileMode.Create))
+            {
+                serializer.Serialize(fs, users);
+            }
+            MessageBox.Show("Данные экспортированы в users.xml");
+        }
+
+        private void btnImportXml_Click(object sender, EventArgs e)
+        {
+            XmlSerializer serializer = new XmlSerializer(typeof(List<User>));
+            using (FileStream fs = new FileStream("users.xml", FileMode.Open))
+            {
+                users = (List<User>)serializer.Deserialize(fs);
+            }
+            UpdateListBox();
+            MessageBox.Show("Данные импортированы из users.xml");
+        }
+
+        private void UpdateListBox()
+        {
+            listBoxUsers.Items.Clear();
+            foreach (var user in users)
+            {
+                listBoxUsers.Items.Add(user);
+            }
+        }
+
+        private void ClearInputs()
+        {
+            txtFirstName.Clear();
+            txtLastName.Clear();
+            txtEmail.Clear();
+            txtPhone.Clear();
+            listBoxUsers.ClearSelected();
+        }
+    }
+
+    [Serializable]
+    public class User
+    {
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public string Phone { get; set; }
+
+        public override string ToString()
+        {
+            return $"{FirstName} {LastName} ({Email}, {Phone})";
+        }
+    }
+}
