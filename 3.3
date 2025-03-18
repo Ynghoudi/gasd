@@ -1,0 +1,78 @@
+using System;
+using System.IO;
+using System.Windows.Forms;
+
+public class MainForm : Form
+{
+    private TextBox textBox;
+    private Button loadButton;
+    private Button editButton;
+
+    public MainForm()
+    {
+        textBox = new TextBox() { ReadOnly = true, Dock = DockStyle.Top, Height = 100 };
+        loadButton = new Button() { Text = "Загрузить файл", Dock = DockStyle.Left };
+        editButton = new Button() { Text = "Редактировать", Dock = DockStyle.Right, Enabled = false };
+
+        loadButton.Click += LoadButton_Click;
+        editButton.Click += EditButton_Click;
+
+        Controls.Add(textBox);
+        Controls.Add(loadButton);
+        Controls.Add(editButton);
+    }
+
+    private void LoadButton_Click(object sender, EventArgs e)
+    {
+        OpenFileDialog openFileDialog = new OpenFileDialog();
+        if (openFileDialog.ShowDialog() == DialogResult.OK)
+        {
+            textBox.Text = File.ReadAllText(openFileDialog.FileName);
+            editButton.Enabled = true;
+        }
+    }
+
+    private void EditButton_Click(object sender, EventArgs e)
+    {
+        EditForm editForm = new EditForm(textBox.Text);
+        editForm.Show();
+    }
+
+    [STAThread]
+    public static void Main()
+    {
+        Application.EnableVisualStyles();
+        Application.SetCompatibleTextRenderingDefault(false);
+        Application.Run(new MainForm());
+    }
+}
+
+public class EditForm : Form
+{
+    private TextBox textBox;
+    private Button saveButton;
+    private Button cancelButton;
+    private string originalText;
+
+    public EditForm(string text)
+    {
+        originalText = text;
+        textBox = new TextBox() { Text = text, Dock = DockStyle.Top, Multiline = true, Height = 100 };
+        saveButton = new Button() { Text = "Сохранить", Dock = DockStyle.Left };
+        cancelButton = new Button() { Text = "Отменить", Dock = DockStyle.Right };
+
+        saveButton.Click += SaveButton_Click;
+        cancelButton.Click += (s, e) => this.Close();
+
+        Controls.Add(textBox);
+        Controls.Add(saveButton);
+        Controls.Add(cancelButton);
+    }
+
+    private void SaveButton_Click(object sender, EventArgs e)
+    {
+        MainForm mainForm = (MainForm)Application.OpenForms[0];
+        mainForm.Controls[0].Text = textBox.Text;
+        this.Close();
+    }
+}
