@@ -1,0 +1,53 @@
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace FileReadProgress
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        private async void btnReadFile_Click(object sender, EventArgs e)
+        {
+
+            string filePath = "path_to_your_file.txt"; 
+
+            try
+            {
+         
+                FileInfo fileInfo = new FileInfo(filePath);
+                long totalBytes = fileInfo.Length;
+                long bytesRead = 0;
+
+                progressBar.Minimum = 0;
+                progressBar.Maximum = (int)totalBytes;
+
+                using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                {
+                    byte[] buffer = new byte[4096]; // Буфер для чтения
+                    int bytesReadInIteration;
+
+                    while ((bytesReadInIteration = await fileStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                    {
+                        bytesRead += bytesReadInIteration;
+
+                        progressBar.Value = (int)bytesRead;
+
+                        lblStatus.Text = $"Прочитано байт: {bytesRead} из {totalBytes}";
+                    }
+                }
+
+                MessageBox.Show("Чтение завершено!");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка: {ex.Message}");
+            }
+        }
+    }
+}
