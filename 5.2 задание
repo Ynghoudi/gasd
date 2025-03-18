@@ -1,0 +1,75 @@
+using System;
+using System.Drawing;
+using System.Windows.Forms;
+
+public class DrawingApp : Form
+{
+    private enum Shape { None, Rectangle, Circle }
+    private Shape currentShape = Shape.None;
+    private Color currentColor = Color.Black;
+    private Point startPoint;
+    private Point endPoint;
+    private bool isDrawing = false;
+
+    public DrawingApp()
+    {
+        this.Text = "Геометрические формы";
+        this.Size = new Size(800, 600);
+        this.DoubleBuffered = true;
+
+        ToolStrip toolStrip = new ToolStrip();
+        ToolStripButton rectButton = new ToolStripButton("Прямоугольник");
+        ToolStripButton circleButton = new ToolStripButton("Круг");
+        ToolStripButton saveButton = new ToolStripButton("Сохранить");
+
+        rectButton.Click += (s, e) => { currentShape = Shape.Rectangle; };
+        circleButton.Click += (s, e) => { currentShape = Shape.Circle; };
+        saveButton.Click += (s, e) => { SaveImage(); };
+
+        toolStrip.Items.Add(rectButton);
+        toolStrip.Items.Add(circleButton);
+        toolStrip.Items.Add(saveButton);
+        this.Controls.Add(toolStrip);
+
+        this.MouseDown += (s, e) => { startPoint = e.Location; isDrawing = true; };
+        this.MouseMove += (s, e) => { if (isDrawing) { endPoint = e.Location; this.Invalidate(); } };
+        this.MouseUp += (s, e) => { isDrawing = false; this.Invalidate(); };
+
+        this.Paint += (s, e) => { DrawShapes(e.Graphics); };
+    }
+
+    private void DrawShapes(Graphics g)
+    {
+        if (isDrawing)
+        {
+            Pen pen = new Pen(currentColor);
+            if (currentShape == Shape.Rectangle)
+                g.DrawRectangle(pen, Rectangle.FromLTRB(Math.Min(startPoint.X, endPoint.X), Math.Min(startPoint.Y, endPoint.Y), Math.Max(startPoint.X, endPoint.X), Math.Max(startPoint.Y, endPoint.Y)));
+            else if (currentShape == Shape.Circle)
+                g.DrawEllipse(pen, Rectangle.FromLTRB(Math.Min(startPoint.X, endPoint.X), Math.Min(startPoint.Y, endPoint.Y), Math.Max(startPoint.X, endPoint.X), Math.Max(startPoint.Y, endPoint.Y)));
+        }
+    }
+
+    private void SaveImage()
+    {
+        using (Bitmap bmp = new Bitmap(this.ClientSize.Width, this.ClientSize.Height))
+        {
+            this.DrawToBitmap(bmp, new Rectangle(0, 0, this.ClientSize.Width, this.ClientSize.Height));
+            using (SaveFileDialog sfd = new SaveFileDialog())
+            {
+                sfd.Filter = "PNG Image|*.png|JPEG Image|*.jpg|Bitmap Image|*.bmp";
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    bmp.Save(sfd.FileName);
+                }
+            }
+        }
+    }
+
+    [STAThread]
+    public static void Main()
+    {
+        Application.EnableVisualStyles();
+        Application.Run(new DrawingApp());
+    }
+}
