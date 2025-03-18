@@ -1,0 +1,29 @@
+using System;
+using System.Windows.Forms;
+
+namespace ResumeMessageBox
+{
+    class Program
+    {
+        [STAThread]
+        static void Main()
+        {
+            string resumePart1 = "ФИО: Иванов Иван Иванович";
+            string resumePart2 = "Опыт работы: 5 лет в разработке ПО.";
+            string resumePart3 = "Образование: МГУ, факультет вычислительной математики.";
+
+            int messageBoxCount = 3;
+
+            int totalCharacters = resumePart1.Length + resumePart2.Length + resumePart3.Length;
+
+            MessageBox.Show(resumePart1, "Резюме - Часть 1");
+            MessageBox.Show(resumePart2, "Резюме - Часть 2");
+            MessageBox.Show(resumePart3, "Резюме - Часть 3");
+
+            double averageCharacters = (double)totalCharacters / messageBoxCount;
+
+            MessageBox.Show("Общее количество символов: " + totalCharacters,
+                            "Среднее количество символов на MessageBox: " + averageCharacters);
+        }
+    }
+}
