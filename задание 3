@@ -1,0 +1,46 @@
+using System;
+using System.Drawing;
+using System.Windows.Forms;
+using static System.Net.Mime.MediaTypeNames;
+
+public class MyForm : Form
+{
+    private Rectangle rectangle;
+
+    public MyForm()
+    {
+        this.ClientSize = new Size(400, 300);
+
+        rectangle = new Rectangle(10, 10, this.ClientSize.Width - 20, this.ClientSize.Height - 20);
+
+        this.MouseDown += new MouseEventHandler(MyForm_MouseDown);
+    }
+
+    private void MyForm_MouseDown(object sender, MouseEventArgs e)
+    {
+        if (e.Button == MouseButtons.Left)
+        {
+            if (rectangle.Contains(e.Location))
+            {
+                MessageBox.Show("Точка внутри прямоугольника.");
+            }
+            else if (rectangle.Left <= e.X && e.X <= rectangle.Right &&
+                     rectangle.Top <= e.Y && e.Y <= rectangle.Bottom)
+            {
+                MessageBox.Show("Точка на границе прямоугольника.");
+            }
+            else
+            {
+                MessageBox.Show("Точка снаружи прямоугольника.");
+            }
+        }
+    }
+
+    [STAThread]
+    static void Main()
+    {
+        Application.EnableVisualStyles();
+        Application.SetCompatibleTextRenderingDefault(false);
+        Application.Run(new MyForm());
+    }
+}
