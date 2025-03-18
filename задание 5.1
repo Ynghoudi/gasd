@@ -1,0 +1,61 @@
+using System;
+using System.Drawing;
+using System.Windows.Forms;
+
+public class ChessForm : Form
+{
+    private ContextMenuStrip contextMenu;
+    private string selectedPiece;
+
+    public ChessForm()
+    {
+        this.Text = "Chess Game";
+        this.ClientSize = new Size(400, 400);
+        this.Paint += new PaintEventHandler(DrawBoard);
+        this.MouseDown += new MouseEventHandler(OnMouseDown);
+        contextMenu = new ContextMenuStrip();
+        contextMenu.Items.Add("Move", null, (s, e) => MovePiece());
+        contextMenu.Items.Add("Capture", null, (s, e) => CapturePiece());
+        contextMenu.Items.Add("Cancel", null, (s, e) => { });
+    }
+
+    private void DrawBoard(object sender, PaintEventArgs e)
+    {
+        Graphics g = e.Graphics;
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                g.FillRectangle((i + j) % 2 == 0 ? Brushes.White : Brushes.Gray, i * 50, j * 50, 50, 50);
+                DrawPiece(g, i, j);
+            }
+        }
+    }
+
+    private void DrawPiece(Graphics g, int x, int y)
+    {
+        if ((x + y) % 2 == 0 && y == 1) g.DrawString("P", new Font("Arial", 20), Brushes.Black, x * 50 + 15, y * 50 + 10);
+        if ((x + y) % 2 == 0 && y == 6) g.DrawString("p", new Font("Arial", 20), Brushes.White, x * 50 + 15, y * 50 + 10);
+    }
+
+    private void OnMouseDown(object sender, MouseEventArgs e)
+    {
+        if (e.Button == MouseButtons.Right)
+        {
+            int x = e.X / 50;
+            int y = e.Y / 50;
+            selectedPiece = (y == 1 && (x + y) % 2 == 0) ? "P" : (y == 6 && (x + y) % 2 == 0) ? "p" : null;
+            if (selectedPiece != null) contextMenu.Show(this, e.Location);
+        }
+    }
+
+    private void MovePiece() { MessageBox.Show($"Move {selectedPiece}"); }
+    private void CapturePiece() { MessageBox.Show($"Capture {selectedPiece}"); }
+
+    [STAThread]
+    static void Main()
+    {
+        Application.EnableVisualStyles();
+        Application.Run(new ChessForm());
+    }
+}
