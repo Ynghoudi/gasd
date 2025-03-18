@@ -1,70 +1,53 @@
-import os
-import tkinter as tk
-from tkinter import filedialog, messagebox, Listbox, Scrollbar
+using System;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
 
-class SearchWindow(tk.Toplevel):
-    def __init__(self, master):
-        super().__init__(master)
-        self.title("Поиск файлов")
-        
-        self.label_directory = tk.Label(self, text="Выберите папку:")
-        self.label_directory.pack(pady=5)
+namespace FileSearchApp
+{
+    public partial class SearchForm : Form
+    {
+        public SearchForm()
+        {
+            InitializeComponent();
+        }
 
-        self.entry_directory = tk.Entry(self, width=50)
-        self.entry_directory.pack(pady=5)
+        private void btnBrowse_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog folderBrowser = new FolderBrowserDialog())
+            {
+                if (folderBrowser.ShowDialog() == DialogResult.OK)
+                {
+                    txtFolderPath.Text = folderBrowser.SelectedPath; 
+                }
+            }
+        }
 
-        self.button_browse = tk.Button(self, text="Обзор", command=self.browse_directory)
-        self.button_browse.pack(pady=5)
+        private void btnSearch_Click(object sender, EventArgs e)
+        {
+            string folderPath = txtFolderPath.Text;
+            string searchPattern = txtSearchPattern.Text;
 
-        self.label_mask = tk.Label(self, text="Введите маску поиска:")
-        self.label_mask.pack(pady=5)
-
-        self.entry_mask = tk.Entry(self, width=20)
-        self.entry_mask.pack(pady=5)
-
-        self.button_search = tk.Button(self, text="Поиск", command=self.search_files)
-        self.button_search.pack(pady=5)
-
-        self.listbox_results = Listbox(self, width=80, height=15)
-        self.listbox_results.pack(pady=5)
-
-        self.scrollbar = Scrollbar(self.listbox_results)
-        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.listbox_results.config(yscrollcommand=self.scrollbar.set)
-        self.scrollbar.config(command=self.listbox_results.yview)
-
-    def browse_directory(self):
-        directory = filedialog.askdirectory()
-        if directory:
-            self.entry_directory.delete(0, tk.END)
-            self.entry_directory.insert(0, directory)
-
-    def search_files(self):
-        directory = self.entry_directory.get()
-        mask = self.entry_mask.get()
-        self.listbox_results.delete(0, tk.END)
-
-        if not directory or not mask:
-            messagebox.showwarning("Внимание", "Пожалуйста, укажите папку и маску поиска.")
-            return
-
-        for root, dirs, files in os.walk(directory):
-            for file in files:
-                if fnmatch.fnmatch(file, mask):
-                    self.listbox_results.insert(tk.END, os.path.join(root, file))
-
-class MainApplication(tk.Tk):
-    def __init__(self):
-        super().__init__()
-        self.title("Главное окно")
-        self.geometry("300x100")
-
-        self.button_open_search = tk.Button(self, text="Открыть окно поиска", command=self.open_search_window)
-        self.button_open_search.pack(pady=20)
-
-    def open_search_window(self):
-        SearchWindow(self)
-
-if __name__ == "__main__":
-    app = MainApplication()
-    app.mainloop()
+            if (Directory.Exists(folderPath))
+            {
+                listBoxFiles.Items.Clear(); 
+                try
+                {
+                    var files = Directory.GetFiles(folderPath, searchPattern, SearchOption.AllDirectories);
+                    foreach (var file in files)
+                    {
+                        listBoxFiles.Items.Add(file);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка при поиске файлов: {ex.Message}");
+                }
+            }
+            else
+            {
+                MessageBox.Show("Выберите корректную папку для поиска.");
+            }
+        }
+    }
+}
